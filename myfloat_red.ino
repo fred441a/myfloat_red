@@ -51,6 +51,8 @@ void mult_float(myfloat_type *arg1, myfloat_type *arg2, myfloat_type *result)
 
   result->mantissa = (unsigned char)temp;
 
+// potentiel fejl ved mantisse på over 128
+// hurtigt men dårligt fix (result->mantissa & 0x7f)
   result->mantissa = result->mantissa | sign; // add recorded sign
 
   result->exponent = arg1->exponent + arg2->exponent + i;
@@ -58,20 +60,25 @@ void mult_float(myfloat_type *arg1, myfloat_type *arg2, myfloat_type *result)
 
 void setup()
 {
-  /*
+  
+  randomSeed(analogRead(A4));
   //opgave 1-6
-
   Serial.begin(9600);
   double temp;
   double da[100];
   myfloat_type mda[100];
+  
   double avrageSum = 0.0;
   for (int i = 0; i <= 99; i++)
   {
     temp = (double)random(-500000,500000)/100000.0;
-    da[i] = temp;
+    da[i] = pow(temp,2);
     doub2mydouble(temp, &mda[i]);
-    mult_float(&mda[i],&mda[i],&mda[i]);
+    double mda2 = pow(myfloat2double(&mda[i]),2);
+    doub2mydouble(mda2,&mda[i]);
+    // \/ virker ikke se linje 54 
+    //mult_float(&mda[i],&mda[i],&mda[i]);
+    
     avrageSum += abs(myfloat2double(&mda[i])-da[i])/abs(da[i]);
   }
   Serial.println((avrageSum/100.0), 10);
@@ -82,9 +89,10 @@ void setup()
   unsigned long tid = micros();
 
   for(int i = 0; i <=99;i++){
-    da[i] = a;
+    a*=da[i];
   }
-  Serial.println(micros()-tid);
+  Serial.print("Double time: ");
+  Serial.println(micros()-tid,10);
 
 
   myfloat_type f1;
@@ -94,13 +102,13 @@ void setup()
   for(int i = 0; i<=99;i++){
     mult_float(&f1,&mda[i],&f); memcpy(&f1,&f,2);
   }
-  Serial.println(micros()-tid);
-*/
-  Serial.begin(9600);
+  Serial.print("my float time: ");
+  Serial.println(micros()-tid,10);
 
-  unsigned long tid = micros();
+  tid = micros();
   double sinus = sin(10);
   Serial.println(sinus);
+  Serial.print("sinus time: ");
   Serial.println(micros() - tid,10);
   
 }
